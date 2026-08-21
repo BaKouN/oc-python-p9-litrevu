@@ -41,6 +41,10 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'reviews.User'
+# Auth flow (named URLs, defined in reviews/urls.py)
+LOGIN_URL = 'login'            # where @login_required sends anonymous users
+LOGIN_REDIRECT_URL = 'home'    # where users land after logging in
+LOGOUT_REDIRECT_URL = 'login'  # where users land after logging out
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,7 +61,7 @@ ROOT_URLCONF = 'litrevu.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,9 +109,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 

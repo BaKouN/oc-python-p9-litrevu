@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion — LITReview{% endblock %}
+
+{% block content %}
+<h1>Connexion</h1>
+
+{% if form.errors %}
+<p role="alert">Identifiants invalides. Veuillez réessayer.</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Se connecter</button>
+</form>
+
+{# Signup link added in the next step, once the signup URL exists #}
+{% endblock %}

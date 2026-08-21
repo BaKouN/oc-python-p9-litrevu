@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}LITReview{% endblock %}</title>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+    {% if user.is_authenticated %}
+    <header>
+        <nav aria-label="Navigation principale">
+            <a href="{% url 'home' %}">LITReview</a>
+            <ul>
+                {# Flux / Posts / Abonnements links added as those pages are built #}
+                <li>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Se déconnecter</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    {% endif %}
+
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
