@@ -10,5 +10,6 @@ urlpatterns = [
         redirect_authenticated_user=True),
         name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('signup/', views.signup, name='signup'),
     path('home/', views.home, name='home'),
 ]
