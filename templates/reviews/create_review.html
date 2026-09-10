@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Créer une critique — LITReview{% endblock %}
+
+{% block content %}
+<h1>Créer une critique</h1>
+
+<article aria-labelledby="ticket-title">
+    <h2 id="ticket-title">Billet : {{ ticket.title }}</h2>
+    <p>Par {{ ticket.user.username }}</p>
+    {% if ticket.description %}<p>{{ ticket.description }}</p>{% endif %}
+    {% if ticket.image %}
+        <img src="{{ ticket.image.url }}" alt="Couverture de {{ ticket.title }}">
+    {% endif %}
+</article>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Envoyer</button>
+</form>
+{% endblock %}

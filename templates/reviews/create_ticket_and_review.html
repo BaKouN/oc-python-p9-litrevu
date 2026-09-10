@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Créer une critique — LITReview{% endblock %}
+
+{% block content %}
+<h1>Créer une critique</h1>
+<p>Vous n'avez pas trouvé de billet pour ce livre ? Créez le billet et sa critique en une fois.</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Livre / article</legend>
+        {{ ticket_form.as_p }}
+    </fieldset>
+    <fieldset>
+        <legend>Critique</legend>
+        {{ review_form.as_p }}
+    </fieldset>
+    <button type="submit">Envoyer</button>
+</form>
+{% endblock %}

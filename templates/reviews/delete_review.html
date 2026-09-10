@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer une critique — LITReview{% endblock %}
+
+{% block content %}
+<h1>Supprimer la critique « {{ review.headline }} » ?</h1>
+<p>Cette action est définitive.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Oui, supprimer</button>
+    <a href="{% url 'home' %}">Annuler</a>
+</form>
+{% endblock %}
