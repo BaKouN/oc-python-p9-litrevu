@@ -4,6 +4,18 @@
 
 {% block content %}
 <h1>Bienvenue sur LITReview</h1>
+<h2>Mes billets</h2>
+<ul>
+{% for ticket in tickets %}
+    <li>
+        {{ ticket.title }}
+        — <a href="{% url 'edit_ticket' ticket.id %}">Modifier</a>
+        — <a href="{% url 'delete_ticket' ticket.id %}">Supprimer</a>
+    </li>
+{% empty %}
+    <li>Aucun billet pour l'instant.</li>
+{% endfor %}
+</ul>
 <p>Vous êtes connecté. Le flux combiné (billets + critiques) arrivera ici.</p>
 
 <p><a href="{% url 'create_ticket' %}">Créer un billet</a></p>
