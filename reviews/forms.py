@@ -37,6 +37,14 @@ class LoginForm(AuthenticationForm):
             field.widget.attrs['class'] = INPUT_CLASSES
 
 
+class TicketImageInput(forms.ClearableFileInput):
+    """Image field with a preview, a 'remove' checkbox and a 'replace' input."""
+
+    template_name = 'reviews/widgets/clearable_file_input.html'
+    clear_checkbox_label = "Supprimer l'image actuelle"
+    input_text = "Remplacer l'image"
+
+
 class TicketForm(forms.ModelForm):
     """Create/edit a ticket."""
 
@@ -46,7 +54,7 @@ class TicketForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': INPUT_CLASSES}),
             'description': forms.Textarea(attrs={'class': TEXTAREA_CLASSES, 'rows': 5}),
-            'image': forms.ClearableFileInput(attrs={'class': 'file-input w-full'}),
+            'image': TicketImageInput(attrs={'class': 'file-input w-full'}),
         }
 
 

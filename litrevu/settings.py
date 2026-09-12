@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.forms',
     'reviews'
 ]
 
@@ -138,3 +139,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Form widgets are rendered with the project template engine, so widget
+# templates can live in templates/ next to the page templates.
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
