@@ -8,12 +8,18 @@
 <section aria-labelledby="follow-form-title" class="card bg-base-100 border border-base-300 mb-8">
     <div class="card-body">
         <h2 id="follow-form-title" class="card-title">Suivre d'autres utilisateurs</h2>
-        <form method="post" class="flex flex-wrap items-end gap-3">
+        <form method="post">
             {% csrf_token %}
-            <div class="grow">
-                {% include "reviews/snippets/form_fields.html" with form=form %}
-            </div>
-            <button type="submit" class="btn btn-primary">Envoyer</button>
+            <fieldset class="fieldset">
+                <label class="label font-semibold text-base-content" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                <div class="flex gap-3">
+                    {{ form.username }}
+                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                </div>
+                {% if form.username.errors %}
+                    <div role="alert">{{ form.username.errors }}</div>
+                {% endif %}
+            </fieldset>
         </form>
     </div>
 </section>

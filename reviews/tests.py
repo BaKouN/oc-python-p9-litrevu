@@ -176,6 +176,7 @@ class PageRenderingTests(TestCase):
             reverse('signup'), {'username': 'carol', 'password1': 'a', 'password2': 'b'}))
         responses.append(self.client.post(
             reverse('create_review', args=[self.reviewable_ticket.id]), {'headline': ''}))
+        responses.append(self.client.post(reverse('follows'), {'username': 'nobody'}))
         for response in responses:
             with self.subTest(url=response.request['PATH_INFO']):
                 content = response.content.decode()
