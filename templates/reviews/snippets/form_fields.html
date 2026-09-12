@@ -1,0 +1,13 @@
+{% if form.non_field_errors %}
+    <div class="alert alert-error" role="alert">
+        <span aria-hidden="true">✖</span>
+        <div>{{ form.non_field_errors }}</div>
+    </div>
+{% endif %}
+{% for field in form %}
+    {% if field.use_fieldset %}
+        {% include "reviews/snippets/radio_field.html" with field=field %}
+    {% else %}
+        {% include "reviews/snippets/field.html" with field=field %}
+    {% endif %}
+{% endfor %}

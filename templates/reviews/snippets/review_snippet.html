@@ -1,21 +1,35 @@
-{# Review card, with the reviewed ticket nested read-only. Context: review, show_actions #}
-<article class="post post-review" aria-labelledby="review-{{ review.id }}-title">
-    <header class="post-header">
-        <p class="post-meta">
-            <span class="post-author">{{ review.user.username }}</span> a publié une critique
-            <time datetime="{{ review.time_created|date:'c' }}">{{ review.time_created|date:'H:i, j F Y' }}</time>
+<article class="card bg-base-100 border border-base-300 shadow-sm"
+         aria-labelledby="review-{{ review.id }}-title">
+    <div class="card-body">
+
+        <header>
+            <p class="text-sm">
+                <span class="font-semibold">{{ review.user.username }}</span> a publié une critique
+                <time datetime="{{ review.time_created|date:'c' }}">{{ review.time_created|date:'H:i, j F Y' }}</time>
+            </p>
+        </header>
+
+        <h2 class="card-title" id="review-{{ review.id }}-title">{{ review.headline }}</h2>
+
+        <p class="flex items-center gap-2">
+            <span class="rating" aria-hidden="true">{% for _ in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</span>
+            <span><span class="sr-only">Note : </span><span class="font-semibold">{{ review.rating }}/5</span></span>
         </p>
-    </header>
-    <h3 id="review-{{ review.id }}-title">{{ review.headline }}</h3>
-    <p class="rating" role="img" aria-label="Note : {{ review.rating }} sur 5">{% for _ in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</p>
-    {% if review.body %}<p class="post-body">{{ review.body|linebreaksbr }}</p>{% endif %}
-    <div class="nested-ticket">
-        {% include "reviews/snippets/ticket_snippet.html" with ticket=review.ticket show_actions=False can_review=False %}
+
+        {% if review.body %}
+            <p>{{ review.body|linebreaksbr }}</p>
+        {% endif %}
+
+        <div class="nested-ticket">
+            {% include "reviews/snippets/ticket_snippet.html" with ticket=review.ticket show_actions=False can_review=False heading='h3' %}
+        </div>
+
+        {% if show_actions %}
+            <div class="card-actions justify-end gap-2">
+                <a class="btn btn-sm" href="{% url 'edit_review' review.id %}">Modifier</a>
+                <a class="btn btn-sm btn-error" href="{% url 'delete_review' review.id %}">Supprimer</a>
+            </div>
+        {% endif %}
+
     </div>
-    {% if show_actions %}
-        <p class="post-actions">
-            <a class="btn" href="{% url 'edit_review' review.id %}">Modifier</a>
-            <a class="btn btn-danger" href="{% url 'delete_review' review.id %}">Supprimer</a>
-        </p>
-    {% endif %}
 </article>

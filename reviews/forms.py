@@ -1,7 +1,10 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from .models import Review, Ticket, User, UserFollows
+
+INPUT_CLASSES = 'input w-full'
+TEXTAREA_CLASSES = 'textarea w-full'
 
 
 class SignupForm(UserCreationForm):
@@ -10,18 +13,45 @@ class SignupForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ('username',)
+        widgets = {
+            'username': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ('password1', 'password2'):
+            self.fields[name].widget.attrs['class'] = INPUT_CLASSES
+
+
+class LoginForm(AuthenticationForm):
+    """Login form with styled widgets."""
+
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        'invalid_login': "Identifiants invalides. Veuillez réessayer.",
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = INPUT_CLASSES
 
 
 class TicketForm(forms.ModelForm):
-    """Create/edit a ticket. Fields generated from the Ticket model."""
+    """Create/edit a ticket."""
 
     class Meta:
         model = Ticket
         fields = ('title', 'description', 'image')
+        widgets = {
+            'title': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'description': forms.Textarea(attrs={'class': TEXTAREA_CLASSES, 'rows': 5}),
+            'image': forms.ClearableFileInput(attrs={'class': 'file-input w-full'}),
+        }
 
 
 class ReviewForm(forms.ModelForm):
-    """Create/edit a review. Rating rendered as 0–5 radio buttons."""
+    """Create/edit a review."""
 
     class Meta:
         model = Review
@@ -32,16 +62,25 @@ class ReviewForm(forms.ModelForm):
             'body': 'Commentaire',
         }
         widgets = {
-            'rating': forms.RadioSelect(choices=[(i, str(i)) for i in range(6)]),
+            'headline': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'body': forms.Textarea(attrs={'class': TEXTAREA_CLASSES, 'rows': 6}),
+            'rating': forms.RadioSelect(
+                choices=[(i, str(i)) for i in range(6)],
+                attrs={'class': 'radio radio-primary'},
+            ),
         }
 
-class FollowForm(forms.Form):
-    """Follow another user by username. All the rules live in clean_username."""
 
-    username = forms.CharField(max_length=150, label="Nom d'utilisateur")
+class FollowForm(forms.Form):
+    """Follow another user by username."""
+
+    username = forms.CharField(
+        max_length=150,
+        label="Nom d'utilisateur",
+        widget=forms.TextInput(attrs={'class': INPUT_CLASSES}),
+    )
 
     def __init__(self, *args, user=None, **kwargs):
-        # The current user is needed to reject self-follow and duplicates.
         super().__init__(*args, **kwargs)
         self.user = user
 
@@ -55,6 +94,5 @@ class FollowForm(forms.Form):
             raise forms.ValidationError('Vous ne pouvez pas vous suivre vous-même.')
         if UserFollows.objects.filter(user=self.user, followed_user=target).exists():
             raise forms.ValidationError('Vous suivez déjà cet utilisateur.')
-        # Hand the resolved User to the view so it does not query again.
         self.cleaned_data['target'] = target
         return username

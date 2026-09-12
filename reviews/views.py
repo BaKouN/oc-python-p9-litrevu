@@ -28,13 +28,7 @@ def signup(request):
 
 @login_required
 def feed(request):
-    """Combined feed: tickets and reviews from three sources, newest first.
-
-    1. Users the current user follows.
-    2. The current user's own posts.
-    3. Reviews written in response to the current user's tickets, even by
-       users they do not follow.
-    """
+    """Combined feed: tickets and reviews from three sources, newest first."""
     followed_ids = UserFollows.objects.filter(
         user=request.user).values_list('followed_user', flat=True)
     tickets = Ticket.objects.filter(
@@ -44,7 +38,6 @@ def feed(request):
         Q(user=request.user) | Q(user__in=followed_ids) | Q(ticket__user=request.user)
     ).annotate(content_type=Value('REVIEW', CharField()))
     posts = sorted(chain(tickets, reviews), key=lambda p: p.time_created, reverse=True)
-    # Ticket ids the current user already reviewed: hides "Créer une critique".
     reviewed_ids = set(
         Review.objects.filter(user=request.user).values_list('ticket_id', flat=True))
     return render(request, 'reviews/feed.html', {
@@ -105,13 +98,12 @@ def delete_ticket(request, ticket_id):
         ticket.delete()
         return redirect('posts')
     return render(request, 'reviews/delete_ticket.html', {'ticket': ticket})
-    
+
 
 @login_required
 def create_review(request, ticket_id):
     """Post a review in response to an existing ticket."""
     ticket = get_object_or_404(Ticket, pk=ticket_id)
-    # One review per user per ticket. The hidden link is UX; this is the guard.
     if Review.objects.filter(ticket=ticket, user=request.user).exists():
         raise PermissionDenied
     if request.method == 'POST':
@@ -204,7 +196,7 @@ def follows(request):
 @login_required
 @require_POST
 def unfollow(request, user_id):
-    """Stop following a user. POST only; reversible, so no confirmation page."""
+    """Stop following a user. POST only."""
     follow = get_object_or_404(UserFollows, user=request.user, followed_user_id=user_id)
     follow.delete()
     messages.success(request, f'Vous ne suivez plus {follow.followed_user.username}.')

@@ -3,42 +3,75 @@
 {% block title %}Abonnements — LITReview{% endblock %}
 
 {% block content %}
-<h1>Abonnements</h1>
+<h1 class="text-3xl font-bold mb-6">Abonnements</h1>
 
-<section aria-labelledby="follow-form-title">
-    <h2 id="follow-form-title">Suivre d'autres utilisateurs</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Envoyer</button>
-    </form>
+<section aria-labelledby="follow-form-title" class="card bg-base-100 border border-base-300 mb-8">
+    <div class="card-body">
+        <h2 id="follow-form-title" class="card-title">Suivre d'autres utilisateurs</h2>
+        <form method="post" class="flex flex-wrap items-end gap-3">
+            {% csrf_token %}
+            <div class="grow">
+                {% include "reviews/snippets/form_fields.html" with form=form %}
+            </div>
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+    </div>
 </section>
 
-<section aria-labelledby="following-title">
-    <h2 id="following-title">Abonnements</h2>
-    <ul class="user-list">
-    {% for follow in following %}
-        <li>
-            {{ follow.followed_user.username }}
-            <form method="post" action="{% url 'unfollow' follow.followed_user.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Désabonner</button>
-            </form>
-        </li>
-    {% empty %}
-        <li>Vous ne suivez personne pour l'instant.</li>
-    {% endfor %}
-    </ul>
+<section aria-labelledby="following-title" class="mb-8">
+    <h2 id="following-title" class="text-xl font-bold mb-3">Abonnements</h2>
+    <div class="overflow-x-auto rounded-box border border-base-300">
+        <table class="table bg-base-100">
+            <caption class="sr-only">Utilisateurs que vous suivez</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for follow in following %}
+                <tr>
+                    <td>{{ follow.followed_user.username }}</td>
+                    <td>
+                        <form method="post" action="{% url 'unfollow' follow.followed_user.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-error">Désabonner</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">Vous ne suivez personne pour l'instant.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 
 <section aria-labelledby="followers-title">
-    <h2 id="followers-title">Abonnés</h2>
-    <ul class="user-list">
-    {% for follow in followers %}
-        <li>{{ follow.user.username }}</li>
-    {% empty %}
-        <li>Personne ne vous suit pour l'instant.</li>
-    {% endfor %}
-    </ul>
+    <h2 id="followers-title" class="text-xl font-bold mb-3">Abonnés</h2>
+    <div class="overflow-x-auto rounded-box border border-base-300">
+        <table class="table bg-base-100">
+            <caption class="sr-only">Utilisateurs qui vous suivent</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Utilisateur</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for follow in followers %}
+                <tr>
+                    <td>{{ follow.user.username }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>Personne ne vous suit pour l'instant.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endblock %}

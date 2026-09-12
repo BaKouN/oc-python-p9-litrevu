@@ -3,11 +3,18 @@
 {% block title %}Créer un billet — LITReview{% endblock %}
 
 {% block content %}
-<h1>Créer un billet</h1>
+<div class="max-w-xl">
+    <h1 class="text-3xl font-bold mb-6">Créer un billet</h1>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Envoyer</button>
-</form>
+    <form method="post" enctype="multipart/form-data" class="card bg-base-100 border border-base-300">
+        <div class="card-body">
+            {% csrf_token %}
+            {% include "reviews/snippets/form_fields.html" with form=form %}
+
+            <div class="card-actions justify-end mt-4">
+                <button type="submit" class="btn btn-primary">Envoyer</button>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}

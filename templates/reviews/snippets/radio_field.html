@@ -1,0 +1,17 @@
+<fieldset class="fieldset"{% if field.aria_describedby %} aria-describedby="{{ field.aria_describedby }}"{% endif %}>
+    <legend class="fieldset-legend font-semibold">{{ field.label }}</legend>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+        {% for radio in field %}
+            <label class="flex items-center gap-2 cursor-pointer" for="{{ radio.id_for_label }}">
+                {{ radio.tag }}
+                <span>{{ radio.choice_label }}</span>
+            </label>
+        {% endfor %}
+    </div>
+    {% if field.help_text %}
+        <div id="{{ field.auto_id }}_helptext" class="label whitespace-normal text-base-content">{{ field.help_text|safe }}</div>
+    {% endif %}
+    {% if field.errors %}
+        <div role="alert">{{ field.errors }}</div>
+    {% endif %}
+</fieldset>

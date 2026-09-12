@@ -3,12 +3,17 @@
 {% block title %}Supprimer une critique — LITReview{% endblock %}
 
 {% block content %}
-<h1>Supprimer la critique « {{ review.headline }} » ?</h1>
-<p>Cette action est définitive.</p>
+<div class="max-w-xl">
+    <h1 class="text-3xl font-bold mb-4">Supprimer la critique « {{ review.headline }} » ?</h1>
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Oui, supprimer</button>
-    <a href="{% url 'posts' %}">Annuler</a>
-</form>
+    <p class="font-semibold">
+        <span aria-hidden="true">⚠</span> Cette action est définitive.
+    </p>
+
+    <form method="post" class="flex justify-end gap-3 mt-6">
+        {% csrf_token %}
+        <a class="btn" href="{% url 'posts' %}">Annuler</a>
+        <button type="submit" class="btn btn-error">Oui, supprimer</button>
+    </form>
+</div>
 {% endblock %}

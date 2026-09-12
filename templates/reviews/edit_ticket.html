@@ -3,16 +3,26 @@
 {% block title %}Modifier un billet — LITReview{% endblock %}
 
 {% block content %}
-<h1>Modifier « {{ ticket.title }} »</h1>
+<div class="max-w-xl">
+    <h1 class="text-3xl font-bold mb-6">Modifier « {{ ticket.title }} »</h1>
 
-{% if ticket.image %}
-<p>Image actuelle :</p>
-<img class="post-image" src="{{ ticket.image.url }}" alt="Couverture actuelle de {{ ticket.title }}">
-{% endif %}
+    <form method="post" enctype="multipart/form-data" class="card bg-base-100 border border-base-300">
+        <div class="card-body">
+            {% csrf_token %}
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-</form>
+            {% if ticket.image %}
+                <p class="font-semibold">Image actuelle :</p>
+                <img class="max-w-full max-h-96 object-cover rounded-box"
+                     src="{{ ticket.image.url }}"
+                     alt="Couverture actuelle de {{ ticket.title }}">
+            {% endif %}
+
+            {% include "reviews/snippets/form_fields.html" with form=form %}
+
+            <div class="card-actions justify-end mt-4">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}

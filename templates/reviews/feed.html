@@ -3,14 +3,14 @@
 {% block title %}Flux — LITReview{% endblock %}
 
 {% block content %}
-<h1>Flux</h1>
+<h1 class="text-3xl font-bold mb-6">Flux</h1>
 
-<p class="page-actions">
-    <a class="btn" href="{% url 'create_ticket' %}">Demander une critique</a>
-    <a class="btn" href="{% url 'create_ticket_and_review' %}">Créer une critique</a>
+<p class="flex flex-wrap gap-3 mb-8">
+    <a class="btn btn-primary" href="{% url 'create_ticket' %}">Demander une critique</a>
+    <a class="btn btn-secondary" href="{% url 'create_ticket_and_review' %}">Créer une critique</a>
 </p>
 
-<section aria-label="Publications">
+<section aria-label="Publications" class="space-y-6">
 {% for post in posts %}
     {% if post.content_type == 'TICKET' %}
         {% include "reviews/snippets/ticket_snippet.html" with ticket=post can_review=True show_actions=False %}
@@ -18,7 +18,10 @@
         {% include "reviews/snippets/review_snippet.html" with review=post show_actions=False %}
     {% endif %}
 {% empty %}
-    <p>Rien à afficher pour l'instant. Demandez une critique ou suivez d'autres utilisateurs.</p>
+    <div class="alert">
+        <span aria-hidden="true">ℹ</span>
+        <span>Rien à afficher pour l'instant. Demandez une critique ou suivez d'autres utilisateurs.</span>
+    </div>
 {% endfor %}
 </section>
 {% endblock %}
