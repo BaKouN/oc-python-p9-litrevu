@@ -12,7 +12,7 @@ from html.parser import HTMLParser
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Review, Ticket, User
+from .models import Review, Ticket, User, UserFollows
 
 PASSWORD = 'Litrevu-2026'
 
@@ -183,3 +183,28 @@ class PageRenderingTests(TestCase):
                 for group in re.findall(r'aria-describedby="([^"]+)"', content):
                     for target in group.split():
                         self.assertIn(target, ids, f'aria-describedby cible {target}, absent de la page')
+
+    def test_follow_back_creates_the_reverse_follow(self):
+        """Un abonne non suivi a un bouton « Suivre en retour » qui cree le suivi."""
+        UserFollows.objects.create(user=self.other, followed_user=self.user)
+        self.client.force_login(self.user)
+        self.assertContains(self.client.get(reverse('follows')), 'Suivre en retour')
+        response = self.client.post(reverse('follow', args=[self.other.id]))
+        self.assertRedirects(response, reverse('follows'))
+        self.assertTrue(
+            UserFollows.objects.filter(user=self.user, followed_user=self.other).exists())
+
+    def test_suggestions_exclude_self_and_followed_users(self):
+        UserFollows.objects.create(user=self.user, followed_user=self.other)
+        User.objects.create_user(username='dave', password=PASSWORD)
+        self.client.force_login(self.user)
+        content = self.client.get(reverse('follows')).content.decode()
+        suggestions = content.split('id="suggestions-title"')[1].split('</section>')[0]
+        self.assertIn('dave', suggestions)
+        self.assertNotIn('bob', suggestions)
+        self.assertNotIn('alice', suggestions)
+
+    def test_follow_is_post_only_and_never_yourself(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(reverse('follow', args=[self.other.id])).status_code, 405)
+        self.assertEqual(self.client.post(reverse('follow', args=[self.user.id])).status_code, 403)

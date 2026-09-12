@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import FollowForm, ReviewForm, SignupForm, TicketForm
-from .models import Review, Ticket, UserFollows
+from .models import Review, Ticket, User, UserFollows
 
 
 def signup(request):
@@ -186,11 +186,31 @@ def follows(request):
         form = FollowForm(user=request.user)
     following = request.user.following.select_related('followed_user')
     followers = request.user.followed_by.select_related('user')
+    following_ids = set(following.values_list('followed_user_id', flat=True))
+    suggestions = User.objects.exclude(pk=request.user.pk).exclude(
+        pk__in=following_ids).order_by('username')[:5]
     return render(request, 'reviews/follows.html', {
         'form': form,
         'following': following,
         'followers': followers,
+        'following_ids': following_ids,
+        'suggestions': suggestions,
     })
+
+
+@login_required
+@require_POST
+def follow(request, user_id):
+    """Follow a user from a button (follow back, suggestions). POST only."""
+    target = get_object_or_404(User, pk=user_id)
+    if target == request.user:
+        raise PermissionDenied
+    _, created = UserFollows.objects.get_or_create(user=request.user, followed_user=target)
+    if created:
+        messages.success(request, f'Vous suivez maintenant {target.username}.')
+    else:
+        messages.info(request, f'Vous suivez déjà {target.username}.')
+    return redirect('follows')
 
 
 @login_required

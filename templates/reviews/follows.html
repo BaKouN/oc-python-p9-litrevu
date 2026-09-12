@@ -18,6 +18,36 @@
     </div>
 </section>
 
+{% if suggestions %}
+<section aria-labelledby="suggestions-title" class="mb-8">
+    <h2 id="suggestions-title" class="text-xl font-bold mb-3">Suggestions</h2>
+    <div class="overflow-x-auto rounded-box border border-base-300">
+        <table class="table bg-base-100">
+            <caption class="sr-only">Utilisateurs que vous ne suivez pas encore</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col" class="text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for suggested in suggestions %}
+                <tr>
+                    <td>{{ suggested.username }}</td>
+                    <td class="text-right">
+                        <form method="post" action="{% url 'follow' suggested.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary">Suivre</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
 <section aria-labelledby="following-title" class="mb-8">
     <h2 id="following-title" class="text-xl font-bold mb-3">Abonnements</h2>
     <div class="overflow-x-auto rounded-box border border-base-300">
@@ -26,14 +56,14 @@
             <thead>
                 <tr>
                     <th scope="col">Utilisateur</th>
-                    <th scope="col">Action</th>
+                    <th scope="col" class="text-right">Action</th>
                 </tr>
             </thead>
             <tbody>
             {% for follow in following %}
                 <tr>
                     <td>{{ follow.followed_user.username }}</td>
-                    <td>
+                    <td class="text-right">
                         <form method="post" action="{% url 'unfollow' follow.followed_user.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-error">Désabonner</button>
@@ -58,16 +88,27 @@
             <thead>
                 <tr>
                     <th scope="col">Utilisateur</th>
+                    <th scope="col" class="text-right">Action</th>
                 </tr>
             </thead>
             <tbody>
             {% for follow in followers %}
                 <tr>
                     <td>{{ follow.user.username }}</td>
+                    <td class="text-right">
+                        {% if follow.user_id in following_ids %}
+                            <span class="text-sm">Abonnement mutuel</span>
+                        {% else %}
+                            <form method="post" action="{% url 'follow' follow.user_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary">Suivre en retour</button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td>Personne ne vous suit pour l'instant.</td>
+                    <td colspan="2">Personne ne vous suit pour l'instant.</td>
                 </tr>
             {% endfor %}
             </tbody>
