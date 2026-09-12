@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Abonnements — LITReview{% endblock %}
+
+{% block content %}
+<h1>Abonnements</h1>
+
+<section aria-labelledby="follow-form-title">
+    <h2 id="follow-form-title">Suivre d'autres utilisateurs</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Envoyer</button>
+    </form>
+</section>
+
+<section aria-labelledby="following-title">
+    <h2 id="following-title">Abonnements</h2>
+    <ul class="user-list">
+    {% for follow in following %}
+        <li>
+            {{ follow.followed_user.username }}
+            <form method="post" action="{% url 'unfollow' follow.followed_user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Désabonner</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>Vous ne suivez personne pour l'instant.</li>
+    {% endfor %}
+    </ul>
+</section>
+
+<section aria-labelledby="followers-title">
+    <h2 id="followers-title">Abonnés</h2>
+    <ul class="user-list">
+    {% for follow in followers %}
+        <li>{{ follow.user.username }}</li>
+    {% empty %}
+        <li>Personne ne vous suit pour l'instant.</li>
+    {% endfor %}
+    </ul>
+</section>
+{% endblock %}

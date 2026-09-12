@@ -16,7 +16,7 @@
             <ul>
                 <li><a href="{% url 'feed' %}">Flux</a></li>
                 <li><a href="{% url 'posts' %}">Posts</a></li>
-                {# Abonnements link added with the follows page #}
+                <li><a href="{% url 'follows' %}">Abonnements</a></li>
                 <li>
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
@@ -29,6 +29,13 @@
     {% endif %}
 
     <main id="main-content">
+        {% if messages %}
+        <ul class="messages" role="status">
+            {% for message in messages %}
+            <li class="message message-{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 </body>

@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from itertools import chain
 
@@ -6,8 +7,9 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import CharField, Q, Value
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from .forms import ReviewForm, SignupForm, TicketForm
+from .forms import FollowForm, ReviewForm, SignupForm, TicketForm
 from .models import Review, Ticket, UserFollows
 
 
@@ -176,3 +178,34 @@ def create_ticket_and_review(request):
         'ticket_form': ticket_form,
         'review_form': review_form,
     })
+
+
+@login_required
+def follows(request):
+    """Follow a user by name; list who I follow and who follows me."""
+    if request.method == 'POST':
+        form = FollowForm(request.POST, user=request.user)
+        if form.is_valid():
+            target = form.cleaned_data['target']
+            UserFollows.objects.create(user=request.user, followed_user=target)
+            messages.success(request, f'Vous suivez maintenant {target.username}.')
+            return redirect('follows')
+    else:
+        form = FollowForm(user=request.user)
+    following = request.user.following.select_related('followed_user')
+    followers = request.user.followed_by.select_related('user')
+    return render(request, 'reviews/follows.html', {
+        'form': form,
+        'following': following,
+        'followers': followers,
+    })
+
+
+@login_required
+@require_POST
+def unfollow(request, user_id):
+    """Stop following a user. POST only; reversible, so no confirmation page."""
+    follow = get_object_or_404(UserFollows, user=request.user, followed_user_id=user_id)
+    follow.delete()
+    messages.success(request, f'Vous ne suivez plus {follow.followed_user.username}.')
+    return redirect('follows')
