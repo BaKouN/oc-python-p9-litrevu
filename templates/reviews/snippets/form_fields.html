@@ -1,6 +1,6 @@
 {% if form.non_field_errors %}
     <div class="alert alert-error" role="alert">
-        <span aria-hidden="true">✖</span>
+        {% include "reviews/snippets/alert_icon.html" with kind='error' %}
         <div>{{ form.non_field_errors }}</div>
     </div>
 {% endif %}

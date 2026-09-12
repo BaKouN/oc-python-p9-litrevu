@@ -14,7 +14,7 @@
     {% endif %}
 {% empty %}
     <div class="alert">
-        <span aria-hidden="true">ℹ</span>
+        {% include "reviews/snippets/alert_icon.html" with kind='info' %}
         <span>Vous n'avez encore rien publié.</span>
     </div>
 {% endfor %}

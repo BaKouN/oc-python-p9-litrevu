@@ -14,7 +14,7 @@
     {% if user.is_authenticated %}
     <header class="bg-base-100 border-b border-base-300">
         <div class="max-w-3xl mx-auto px-4 py-2 flex flex-wrap items-center gap-2">
-            <a class="btn btn-ghost text-xl" href="{% url 'feed' %}">LITReview</a>
+            <a class="text-xl font-bold" href="{% url 'feed' %}">LITReview</a>
 
             <nav aria-label="Navigation principale" class="order-last w-full sm:order-none sm:w-auto sm:mx-auto">
                 <ul class="menu menu-horizontal px-1">
@@ -38,7 +38,7 @@
         <ul class="mb-6 space-y-2" role="status">
             {% for message in messages %}
             <li class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
-                <span aria-hidden="true">{% if message.tags == 'error' %}✖{% elif message.tags == 'success' %}✔{% else %}ℹ{% endif %}</span>
+                {% include "reviews/snippets/alert_icon.html" with kind=message.tags %}
                 <span>{{ message }}</span>
             </li>
             {% endfor %}
