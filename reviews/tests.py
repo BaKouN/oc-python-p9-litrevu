@@ -6,6 +6,7 @@ couvre pas les retours a la ligne) : un commentaire multi-ligne s'affiche
 donc tel quel dans la page. Ce test rend toutes les pages et verifie
 qu'aucune syntaxe de gabarit n'atteint le HTML envoye au navigateur.
 """
+import re
 from html.parser import HTMLParser
 
 from django.test import TestCase
@@ -161,3 +162,24 @@ class PageRenderingTests(TestCase):
                 parser = ParagraphNestingParser()
                 parser.feed(self.client.get(url).content.decode())
                 self.assertEqual(parser.problems, [], f'balise de bloc dans un <p> sur {url}')
+
+    def test_aria_describedby_targets_exist(self):
+        """Chaque id cite par aria-describedby doit exister dans la page.
+
+        Django ajoute lui-meme aria-describedby="id_x_helptext id_x_error"
+        sur les champs : c'est au gabarit d'ecrire ces ids, sinon la
+        reference pointe dans le vide.
+        """
+        self.client.force_login(self.user)
+        responses = [self.client.get(url) for url in self.public_pages() + self.connected_pages()]
+        responses.append(self.client.post(
+            reverse('signup'), {'username': 'carol', 'password1': 'a', 'password2': 'b'}))
+        responses.append(self.client.post(
+            reverse('create_review', args=[self.reviewable_ticket.id]), {'headline': ''}))
+        for response in responses:
+            with self.subTest(url=response.request['PATH_INFO']):
+                content = response.content.decode()
+                ids = set(re.findall(r'id="([^"]+)"', content))
+                for group in re.findall(r'aria-describedby="([^"]+)"', content):
+                    for target in group.split():
+                        self.assertIn(target, ids, f'aria-describedby cible {target}, absent de la page')
