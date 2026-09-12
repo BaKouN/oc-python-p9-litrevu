@@ -123,6 +123,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
 # Media (user-uploaded files, e.g. ticket images)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'

@@ -25,3 +25,6 @@ local_settings.py
 
 # macOS
 .DS_Store
+
+# Build tools (downloaded by scripts/build-css.sh, ~80 MB)
+/tools/

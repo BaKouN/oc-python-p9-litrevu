@@ -1,42 +1,52 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="papier">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}LITReview{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body>
+<body class="min-h-screen flex flex-col bg-base-200">
+
     <a class="skip-link" href="#main-content">Aller au contenu principal</a>
 
     {% if user.is_authenticated %}
-    <header>
-        <nav aria-label="Navigation principale">
-            <a href="{% url 'feed' %}">LITReview</a>
-            <ul>
-                <li><a href="{% url 'feed' %}">Flux</a></li>
-                <li><a href="{% url 'posts' %}">Posts</a></li>
-                <li><a href="{% url 'follows' %}">Abonnements</a></li>
-                <li>
-                    <form action="{% url 'logout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit">Se déconnecter</button>
-                    </form>
-                </li>
-            </ul>
-        </nav>
+    <header class="bg-base-100 border-b border-base-300">
+        <div class="max-w-3xl mx-auto px-4 py-2 flex flex-wrap items-center gap-2">
+            <a class="btn btn-ghost text-xl" href="{% url 'feed' %}">LITReview</a>
+
+            <nav aria-label="Navigation principale" class="order-last w-full sm:order-none sm:w-auto sm:mx-auto">
+                <ul class="menu menu-horizontal px-1">
+                    <li><a href="{% url 'feed' %}">Flux</a></li>
+                    <li><a href="{% url 'posts' %}">Posts</a></li>
+                    <li><a href="{% url 'follows' %}">Abonnements</a></li>
+                </ul>
+            </nav>
+
+            <form class="ml-auto sm:ml-0" action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost">Se déconnecter</button>
+            </form>
+        </div>
     </header>
     {% endif %}
 
-    <main id="main-content">
+    <main id="main-content" class="flex-1 w-full max-w-3xl mx-auto px-4 py-8">
+
         {% if messages %}
-        <ul class="messages" role="status">
+        <ul class="mb-6 space-y-2" role="status">
             {% for message in messages %}
-            <li class="message message-{{ message.tags }}">{{ message }}</li>
+            <li class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
+                <span aria-hidden="true">{% if message.tags == 'error' %}✖{% elif message.tags == 'success' %}✔{% else %}ℹ{% endif %}</span>
+                <span>{{ message }}</span>
+            </li>
             {% endfor %}
         </ul>
         {% endif %}
+
         {% block content %}{% endblock %}
     </main>
+
 </body>
 </html>
