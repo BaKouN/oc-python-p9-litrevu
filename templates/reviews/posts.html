@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Vos posts — LITReview{% endblock %}
+
+{% block content %}
+<h1>Vos posts</h1>
+
+<section aria-label="Vos publications">
+{% for post in posts %}
+    {% if post.content_type == 'TICKET' %}
+        {% include "reviews/snippets/ticket_snippet.html" with ticket=post show_actions=True can_review=False %}
+    {% else %}
+        {% include "reviews/snippets/review_snippet.html" with review=post show_actions=True %}
+    {% endif %}
+{% empty %}
+    <p>Vous n'avez encore rien publié.</p>
+{% endfor %}
+</section>
+{% endblock %}

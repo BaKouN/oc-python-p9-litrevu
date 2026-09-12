@@ -43,7 +43,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'reviews.User'
 # Auth flow (named URLs, defined in reviews/urls.py)
 LOGIN_URL = 'login'            # where @login_required sends anonymous users
-LOGIN_REDIRECT_URL = 'home'    # where users land after logging in
+LOGIN_REDIRECT_URL = 'feed'    # where users land after logging in
 LOGOUT_REDIRECT_URL = 'login'  # where users land after logging out
 
 MIDDLEWARE = [

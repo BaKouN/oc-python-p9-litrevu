@@ -5,6 +5,11 @@
 {% block content %}
 <h1>Modifier « {{ ticket.title }} »</h1>
 
+{% if ticket.image %}
+<p>Image actuelle :</p>
+<img class="post-image" src="{{ ticket.image.url }}" alt="Couverture actuelle de {{ ticket.title }}">
+{% endif %}
+
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}

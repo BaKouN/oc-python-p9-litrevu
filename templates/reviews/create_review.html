@@ -5,14 +5,10 @@
 {% block content %}
 <h1>Créer une critique</h1>
 
-<article aria-labelledby="ticket-title">
-    <h2 id="ticket-title">Billet : {{ ticket.title }}</h2>
-    <p>Par {{ ticket.user.username }}</p>
-    {% if ticket.description %}<p>{{ ticket.description }}</p>{% endif %}
-    {% if ticket.image %}
-        <img src="{{ ticket.image.url }}" alt="Couverture de {{ ticket.title }}">
-    {% endif %}
-</article>
+<h2>Billet concerné</h2>
+{% include "reviews/snippets/ticket_snippet.html" with ticket=ticket show_actions=False can_review=False %}
+
+<h2>Votre critique</h2>
 
 <form method="post">
     {% csrf_token %}

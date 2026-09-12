@@ -1,0 +1,21 @@
+{# Review card, with the reviewed ticket nested read-only. Context: review, show_actions #}
+<article class="post post-review" aria-labelledby="review-{{ review.id }}-title">
+    <header class="post-header">
+        <p class="post-meta">
+            <span class="post-author">{{ review.user.username }}</span> a publié une critique
+            <time datetime="{{ review.time_created|date:'c' }}">{{ review.time_created|date:'H:i, j F Y' }}</time>
+        </p>
+    </header>
+    <h3 id="review-{{ review.id }}-title">{{ review.headline }}</h3>
+    <p class="rating" role="img" aria-label="Note : {{ review.rating }} sur 5">{% for _ in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</p>
+    {% if review.body %}<p class="post-body">{{ review.body|linebreaksbr }}</p>{% endif %}
+    <div class="nested-ticket">
+        {% include "reviews/snippets/ticket_snippet.html" with ticket=review.ticket show_actions=False can_review=False %}
+    </div>
+    {% if show_actions %}
+        <p class="post-actions">
+            <a class="btn" href="{% url 'edit_review' review.id %}">Modifier</a>
+            <a class="btn btn-danger" href="{% url 'delete_review' review.id %}">Supprimer</a>
+        </p>
+    {% endif %}
+</article>

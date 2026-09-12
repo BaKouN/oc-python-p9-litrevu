@@ -3,8 +3,12 @@
 {% block title %}Modifier une critique — LITReview{% endblock %}
 
 {% block content %}
-<h1>Modifier la critique de « {{ review.ticket.title }} »</h1>
+<h1>Modifier votre critique</h1>
 
+<h2>Billet concerné</h2>
+{% include "reviews/snippets/ticket_snippet.html" with ticket=review.ticket show_actions=False can_review=False %}
+
+<h2>Votre critique</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}

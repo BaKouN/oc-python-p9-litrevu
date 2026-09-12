@@ -1,11 +1,14 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from itertools import chain
+
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import CharField, Q, Value
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ReviewForm, SignupForm, TicketForm
-from .models import Review, Ticket
+from .models import Review, Ticket, UserFollows
 
 
 def signup(request):
@@ -15,24 +18,48 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('feed')
     else:
         form = SignupForm()
     return render(request, 'registration/signup.html', {'form': form})
 
 
 @login_required
-def home(request):
-    """Landing page after login. Will become the combined feed later."""
-    tickets = Ticket.objects.filter(user=request.user).order_by('-time_created')
-    reviews = Review.objects.filter(user=request.user).order_by('-time_created')
-    # Ticket ids the current user already reviewed: used to hide the link.
-    reviewed_ids = set(reviews.values_list('ticket_id', flat=True))
-    return render(request, 'reviews/home.html', {
-        'tickets': tickets,
-        'reviews': reviews,
+def feed(request):
+    """Combined feed: tickets and reviews from three sources, newest first.
+
+    1. Users the current user follows.
+    2. The current user's own posts.
+    3. Reviews written in response to the current user's tickets, even by
+       users they do not follow.
+    """
+    followed_ids = UserFollows.objects.filter(
+        user=request.user).values_list('followed_user', flat=True)
+    tickets = Ticket.objects.filter(
+        Q(user=request.user) | Q(user__in=followed_ids)
+    ).annotate(content_type=Value('TICKET', CharField()))
+    reviews = Review.objects.filter(
+        Q(user=request.user) | Q(user__in=followed_ids) | Q(ticket__user=request.user)
+    ).annotate(content_type=Value('REVIEW', CharField()))
+    posts = sorted(chain(tickets, reviews), key=lambda p: p.time_created, reverse=True)
+    # Ticket ids the current user already reviewed: hides "Créer une critique".
+    reviewed_ids = set(
+        Review.objects.filter(user=request.user).values_list('ticket_id', flat=True))
+    return render(request, 'reviews/feed.html', {
+        'posts': posts,
         'reviewed_ids': reviewed_ids,
     })
+
+
+@login_required
+def posts(request):
+    """The current user's own tickets and reviews, with edit/delete actions."""
+    tickets = Ticket.objects.filter(user=request.user).annotate(
+        content_type=Value('TICKET', CharField()))
+    reviews = Review.objects.filter(user=request.user).annotate(
+        content_type=Value('REVIEW', CharField()))
+    posts = sorted(chain(tickets, reviews), key=lambda p: p.time_created, reverse=True)
+    return render(request, 'reviews/posts.html', {'posts': posts})
 
 
 @login_required
@@ -44,7 +71,7 @@ def create_ticket(request):
             ticket = form.save(commit=False)
             ticket.user = request.user
             ticket.save()
-            return redirect('home')
+            return redirect('feed')
     else:
         form = TicketForm()
     return render(request, 'reviews/create_ticket.html', {'form': form})
@@ -60,7 +87,7 @@ def edit_ticket(request, ticket_id):
         form = TicketForm(request.POST, request.FILES, instance=ticket)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect('posts')
     else:
         form = TicketForm(instance=ticket)
     return render(request, 'reviews/edit_ticket.html', {'form': form, 'ticket': ticket})
@@ -74,7 +101,7 @@ def delete_ticket(request, ticket_id):
         raise PermissionDenied
     if request.method == 'POST':
         ticket.delete()
-        return redirect('home')
+        return redirect('posts')
     return render(request, 'reviews/delete_ticket.html', {'ticket': ticket})
     
 
@@ -92,7 +119,7 @@ def create_review(request, ticket_id):
             review.user = request.user
             review.ticket = ticket
             review.save()
-            return redirect('home')
+            return redirect('feed')
     else:
         form = ReviewForm()
     return render(request, 'reviews/create_review.html', {'form': form, 'ticket': ticket})
@@ -108,7 +135,7 @@ def edit_review(request, review_id):
         form = ReviewForm(request.POST, instance=review)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect('posts')
     else:
         form = ReviewForm(instance=review)
     return render(request, 'reviews/edit_review.html', {'form': form, 'review': review})
@@ -122,7 +149,7 @@ def delete_review(request, review_id):
         raise PermissionDenied
     if request.method == 'POST':
         review.delete()
-        return redirect('home')
+        return redirect('posts')
     return render(request, 'reviews/delete_review.html', {'review': review})
 
 
@@ -132,8 +159,6 @@ def create_ticket_and_review(request):
     if request.method == 'POST':
         ticket_form = TicketForm(request.POST, request.FILES)
         review_form = ReviewForm(request.POST)
-        # all([...]) validates BOTH forms; `and` would stop at the first failure
-        # and hide the second form's errors from the user.
         if all([ticket_form.is_valid(), review_form.is_valid()]):
             with transaction.atomic():
                 ticket = ticket_form.save(commit=False)
@@ -143,7 +168,7 @@ def create_ticket_and_review(request):
                 review.user = request.user
                 review.ticket = ticket
                 review.save()
-            return redirect('home')
+            return redirect('feed')
     else:
         ticket_form = TicketForm()
         review_form = ReviewForm()

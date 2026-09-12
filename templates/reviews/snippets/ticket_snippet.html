@@ -1,0 +1,25 @@
+{# Ticket card. Context: ticket, show_actions (edit/delete), can_review (button), reviewed_ids #}
+<article class="post post-ticket" aria-labelledby="ticket-{{ ticket.id }}-title">
+    <header class="post-header">
+        <p class="post-meta">
+            <span class="post-author">{{ ticket.user.username }}</span> a demandé une critique
+            <time datetime="{{ ticket.time_created|date:'c' }}">{{ ticket.time_created|date:'H:i, j F Y' }}</time>
+        </p>
+    </header>
+    <h3 id="ticket-{{ ticket.id }}-title">{{ ticket.title }}</h3>
+    {% if ticket.description %}<p class="post-body">{{ ticket.description|linebreaksbr }}</p>{% endif %}
+    {% if ticket.image %}
+        <img class="post-image" src="{{ ticket.image.url }}" alt="Couverture de {{ ticket.title }}">
+    {% endif %}
+    {% if can_review and ticket.id not in reviewed_ids %}
+        <p class="post-actions">
+            <a class="btn" href="{% url 'create_review' ticket.id %}">Créer une critique</a>
+        </p>
+    {% endif %}
+    {% if show_actions %}
+        <p class="post-actions">
+            <a class="btn" href="{% url 'edit_ticket' ticket.id %}">Modifier</a>
+            <a class="btn btn-danger" href="{% url 'delete_ticket' ticket.id %}">Supprimer</a>
+        </p>
+    {% endif %}
+</article>

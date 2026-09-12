@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Flux — LITReview{% endblock %}
+
+{% block content %}
+<h1>Flux</h1>
+
+<p class="page-actions">
+    <a class="btn" href="{% url 'create_ticket' %}">Demander une critique</a>
+    <a class="btn" href="{% url 'create_ticket_and_review' %}">Créer une critique</a>
+</p>
+
+<section aria-label="Publications">
+{% for post in posts %}
+    {% if post.content_type == 'TICKET' %}
+        {% include "reviews/snippets/ticket_snippet.html" with ticket=post can_review=True show_actions=False %}
+    {% else %}
+        {% include "reviews/snippets/review_snippet.html" with review=post show_actions=False %}
+    {% endif %}
+{% empty %}
+    <p>Rien à afficher pour l'instant. Demandez une critique ou suivez d'autres utilisateurs.</p>
+{% endfor %}
+</section>
+{% endblock %}

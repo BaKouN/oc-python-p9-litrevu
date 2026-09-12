@@ -12,9 +12,11 @@
     {% if user.is_authenticated %}
     <header>
         <nav aria-label="Navigation principale">
-            <a href="{% url 'home' %}">LITReview</a>
+            <a href="{% url 'feed' %}">LITReview</a>
             <ul>
-                {# Flux / Posts / Abonnements links added as those pages are built #}
+                <li><a href="{% url 'feed' %}">Flux</a></li>
+                <li><a href="{% url 'posts' %}">Posts</a></li>
+                {# Abonnements link added with the follows page #}
                 <li>
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
