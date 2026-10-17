@@ -8,11 +8,9 @@ __pycache__/
 .venv/
 venv/
 
-# Django
-db.sqlite3
+# Django (db.sqlite3 and media/ ship with the repo as demo data)
 db.sqlite3-journal
 /staticfiles/
-/media/
 *.log
 local_settings.py
 

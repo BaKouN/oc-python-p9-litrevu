@@ -31,10 +31,18 @@ python manage.py createsuperuser
 
 ## Identifiants de test
 
-| Utilisateur | Mot de passe   | Rôle                        |
-|-------------|----------------|-----------------------------|
-| `bakoon`    | `Litrevu-2026` | superutilisateur (`/admin/`) |
-| `irina`     | `Litrevu-2026` | utilisateur standard         |
+Tous les comptes utilisent le mot de passe `Litrevu-2026`.
+
+| Utilisateur | Rôle                          | Abonnements           |
+|-------------|-------------------------------|-----------------------|
+| `admin`     | superutilisateur (`/admin/`)  | aucun                 |
+| `camille`   | utilisateur (compte de démo)  | `lucas`, `sophie`     |
+| `lucas`     | utilisateur                   | `camille`             |
+| `sophie`    | utilisateur                   | `camille`, `julien`   |
+| `julien`    | utilisateur                   | `camille`             |
+
+Les billets portent sur de vrais livres et films ; les couvertures sont des visuels
+typographiques générés, sans image soumise à droits.
 
 ## Fonctionnalités
 
@@ -42,7 +50,9 @@ python manage.py createsuperuser
 - Billets : créer (avec image), modifier, supprimer — réservé à l'auteur
 - Critiques : créer en réponse à un billet, ou billet + critique en une fois ; modifier, supprimer — réservé à l'auteur
 - Une seule critique par utilisateur et par billet
-- À venir : flux combiné billets + critiques, abonnements
+- Flux combiné : billets et critiques de l'utilisateur et de ses abonnements, plus les critiques reçues sur ses billets, du plus récent au plus ancien
+- Page « Posts » : les billets et critiques de l'utilisateur, avec les actions modifier / supprimer
+- Abonnements : suivre un utilisateur par son nom, se désabonner, voir ses abonnés
 
 ## Structure
 
@@ -50,7 +60,7 @@ python manage.py createsuperuser
 litrevu/     configuration du projet (settings, urls racine)
 reviews/     application : modèles, formulaires, vues, urls, admin
 templates/   gabarits HTML (base.html + registration/ + reviews/)
-media/       images uploadées (ignoré par git)
+media/       images des billets (données de démo incluses)
 ```
 
 ## Choix techniques
