@@ -6,6 +6,7 @@ couvre pas les retours a la ligne) : un commentaire multi-ligne s'affiche
 donc tel quel dans la page. Ce test rend toutes les pages et verifie
 qu'aucune syntaxe de gabarit n'atteint le HTML envoye au navigateur.
 """
+
 import re
 from html.parser import HTMLParser
 
@@ -16,7 +17,16 @@ from .models import Review, Ticket, User, UserFollows
 
 PASSWORD = 'Litrevu-2026'
 
-BLOCK_ELEMENTS = {'ul', 'ol', 'div', 'p', 'section', 'form', 'fieldset', 'table'}
+BLOCK_ELEMENTS = {
+    'ul',
+    'ol',
+    'div',
+    'p',
+    'section',
+    'form',
+    'fieldset',
+    'table',
+}
 
 
 class ParagraphNestingParser(HTMLParser):
@@ -35,7 +45,9 @@ class ParagraphNestingParser(HTMLParser):
         if tag == 'p':
             self.open_paragraphs.append(self.getpos()[0])
         elif tag in BLOCK_ELEMENTS and self.open_paragraphs:
-            self.problems.append((tag, self.open_paragraphs[-1], self.getpos()[0]))
+            self.problems.append(
+                (tag, self.open_paragraphs[-1], self.getpos()[0])
+            )
 
     def handle_endtag(self, tag):
         if tag == 'p' and self.open_paragraphs:
@@ -45,19 +57,34 @@ class ParagraphNestingParser(HTMLParser):
 class PageRenderingTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(username='alice', password=PASSWORD)
+        cls.user = User.objects.create_user(
+            username='alice', password=PASSWORD
+        )
         cls.other = User.objects.create_user(username='bob', password=PASSWORD)
         cls.own_ticket = Ticket.objects.create(
-            user=cls.user, title='Mon billet', description='Description de mon billet.')
+            user=cls.user,
+            title='Mon billet',
+            description='Description de mon billet.',
+        )
         cls.other_ticket = Ticket.objects.create(
-            user=cls.other, title='Billet de bob', description='Description du billet de bob.')
+            user=cls.other,
+            title='Billet de bob',
+            description='Description du billet de bob.',
+        )
         # Billet sur lequel alice n'a pas encore ecrit : la regle "une critique
         # par utilisateur et par billet" autorise donc la page de creation.
         cls.reviewable_ticket = Ticket.objects.create(
-            user=cls.other, title='Autre billet de bob', description='A critiquer.')
+            user=cls.other,
+            title='Autre billet de bob',
+            description='A critiquer.',
+        )
         cls.own_review = Review.objects.create(
-            ticket=cls.other_ticket, user=cls.user, headline='Ma critique', rating=4,
-            body='Le corps de ma critique.')
+            ticket=cls.other_ticket,
+            user=cls.user,
+            headline='Ma critique',
+            rating=4,
+            body='Le corps de ma critique.',
+        )
 
     def connected_pages(self):
         """Toutes les pages accessibles a un utilisateur connecte."""
@@ -84,14 +111,18 @@ class PageRenderingTests(TestCase):
             with self.subTest(url=url):
                 content = self.client.get(url).content.decode()
                 for syntax in ('{#', '#}', '{%', '%}', '{{', '}}'):
-                    self.assertNotIn(syntax, content, f'{syntax} visible dans {url}')
+                    self.assertNotIn(
+                        syntax, content, f'{syntax} visible dans {url}'
+                    )
 
         self.client.force_login(self.user)
         for url in self.connected_pages():
             with self.subTest(url=url):
                 content = self.client.get(url).content.decode()
                 for syntax in ('{#', '#}', '{%', '%}', '{{', '}}'):
-                    self.assertNotIn(syntax, content, f'{syntax} visible dans {url}')
+                    self.assertNotIn(
+                        syntax, content, f'{syntax} visible dans {url}'
+                    )
 
     def test_connected_pages_return_200(self):
         self.client.force_login(self.user)
@@ -109,13 +140,17 @@ class PageRenderingTests(TestCase):
     def test_cannot_edit_another_users_ticket(self):
         """La page de modification d'autrui doit renvoyer 403, pas 404."""
         self.client.force_login(self.user)
-        response = self.client.get(reverse('edit_ticket', args=[self.other_ticket.id]))
+        response = self.client.get(
+            reverse('edit_ticket', args=[self.other_ticket.id])
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_form_error_is_linked_to_its_field(self):
-        """L'erreur doit etre reliee au champ, pas seulement affichee a cote."""
+        """L'erreur doit etre reliee au champ, pas juste affichee a cote."""
         self.client.force_login(self.user)
-        response = self.client.post(reverse('create_ticket'), {'title': '', 'description': ''})
+        response = self.client.post(
+            reverse('create_ticket'), {'title': '', 'description': ''}
+        )
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('aria-invalid="true"', content)
@@ -126,7 +161,8 @@ class PageRenderingTests(TestCase):
         """La note est un groupe de radios avec un <legend>, donc annonce."""
         self.client.force_login(self.user)
         content = self.client.get(
-            reverse('create_review', args=[self.reviewable_ticket.id])).content.decode()
+            reverse('create_review', args=[self.reviewable_ticket.id])
+        ).content.decode()
         self.assertIn('<legend', content)
         self.assertEqual(content.count('name="rating"'), 6)
 
@@ -138,7 +174,9 @@ class PageRenderingTests(TestCase):
         meme erreur s'affichait deux fois, empilee.
         """
         response = self.client.post(
-            reverse('login'), {'username': self.user.username, 'password': 'mauvais'})
+            reverse('login'),
+            {'username': self.user.username, 'password': 'mauvais'},
+        )
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertEqual(content.count('alert-error'), 1)
@@ -161,7 +199,11 @@ class PageRenderingTests(TestCase):
             with self.subTest(url=url):
                 parser = ParagraphNestingParser()
                 parser.feed(self.client.get(url).content.decode())
-                self.assertEqual(parser.problems, [], f'balise de bloc dans un <p> sur {url}')
+                self.assertEqual(
+                    parser.problems,
+                    [],
+                    f'balise de bloc dans un <p> sur {url}',
+                )
 
     def test_aria_describedby_targets_exist(self):
         """Chaque id cite par aria-describedby doit exister dans la page.
@@ -171,41 +213,80 @@ class PageRenderingTests(TestCase):
         reference pointe dans le vide.
         """
         self.client.force_login(self.user)
-        responses = [self.client.get(url) for url in self.public_pages() + self.connected_pages()]
-        responses.append(self.client.post(
-            reverse('signup'), {'username': 'carol', 'password1': 'a', 'password2': 'b'}))
-        responses.append(self.client.post(
-            reverse('create_review', args=[self.reviewable_ticket.id]), {'headline': ''}))
-        responses.append(self.client.post(reverse('follows'), {'username': 'nobody'}))
+        responses = [
+            self.client.get(url)
+            for url in self.public_pages() + self.connected_pages()
+        ]
+        responses.append(
+            self.client.post(
+                reverse('signup'),
+                {'username': 'carol', 'password1': 'a', 'password2': 'b'},
+            )
+        )
+        responses.append(
+            self.client.post(
+                reverse('create_review', args=[self.reviewable_ticket.id]),
+                {'headline': ''},
+            )
+        )
+        responses.append(
+            self.client.post(reverse('follows'), {'username': 'nobody'})
+        )
         for response in responses:
             with self.subTest(url=response.request['PATH_INFO']):
                 content = response.content.decode()
                 ids = set(re.findall(r'id="([^"]+)"', content))
-                for group in re.findall(r'aria-describedby="([^"]+)"', content):
+                for group in re.findall(
+                    r'aria-describedby="([^"]+)"', content
+                ):
                     for target in group.split():
-                        self.assertIn(target, ids, f'aria-describedby cible {target}, absent de la page')
+                        self.assertIn(
+                            target,
+                            ids,
+                            f'aria-describedby cible {target} absent',
+                        )
 
     def test_follow_back_creates_the_reverse_follow(self):
-        """Un abonne non suivi a un bouton « Suivre en retour » qui cree le suivi."""
+        """Un abonne non suivi a un bouton « Suivre en retour ».
+
+        Le bouton cree le suivi inverse.
+        """
         UserFollows.objects.create(user=self.other, followed_user=self.user)
         self.client.force_login(self.user)
-        self.assertContains(self.client.get(reverse('follows')), 'Suivre en retour')
+        self.assertContains(
+            self.client.get(reverse('follows')), 'Suivre en retour'
+        )
         response = self.client.post(reverse('follow', args=[self.other.id]))
         self.assertRedirects(response, reverse('follows'))
         self.assertTrue(
-            UserFollows.objects.filter(user=self.user, followed_user=self.other).exists())
+            UserFollows.objects.filter(
+                user=self.user, followed_user=self.other
+            ).exists()
+        )
 
     def test_suggestions_exclude_self_and_followed_users(self):
         UserFollows.objects.create(user=self.user, followed_user=self.other)
         User.objects.create_user(username='dave', password=PASSWORD)
         self.client.force_login(self.user)
         content = self.client.get(reverse('follows')).content.decode()
-        suggestions = content.split('id="suggestions-title"')[1].split('</section>')[0]
+        suggestions = content.split('id="suggestions-title"')[1].split(
+            '</section>'
+        )[0]
         self.assertIn('dave', suggestions)
         self.assertNotIn('bob', suggestions)
         self.assertNotIn('alice', suggestions)
 
     def test_follow_is_post_only_and_never_yourself(self):
         self.client.force_login(self.user)
-        self.assertEqual(self.client.get(reverse('follow', args=[self.other.id])).status_code, 405)
-        self.assertEqual(self.client.post(reverse('follow', args=[self.user.id])).status_code, 403)
+        self.assertEqual(
+            self.client.get(
+                reverse('follow', args=[self.other.id])
+            ).status_code,
+            405,
+        )
+        self.assertEqual(
+            self.client.post(
+                reverse('follow', args=[self.user.id])
+            ).status_code,
+            403,
+        )

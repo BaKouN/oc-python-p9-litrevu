@@ -29,31 +29,47 @@ def signup(request):
 @login_required
 def feed(request):
     """Combined feed: tickets and reviews from three sources, newest first."""
-    followed_ids = UserFollows.objects.filter(
-        user=request.user).values_list('followed_user', flat=True)
+    followed_ids = UserFollows.objects.filter(user=request.user).values_list(
+        'followed_user', flat=True
+    )
     tickets = Ticket.objects.filter(
         Q(user=request.user) | Q(user__in=followed_ids)
     ).annotate(content_type=Value('TICKET', CharField()))
     reviews = Review.objects.filter(
-        Q(user=request.user) | Q(user__in=followed_ids) | Q(ticket__user=request.user)
+        Q(user=request.user)
+        | Q(user__in=followed_ids)
+        | Q(ticket__user=request.user)
     ).annotate(content_type=Value('REVIEW', CharField()))
-    posts = sorted(chain(tickets, reviews), key=lambda p: p.time_created, reverse=True)
+    posts = sorted(
+        chain(tickets, reviews), key=lambda p: p.time_created, reverse=True
+    )
     reviewed_ids = set(
-        Review.objects.filter(user=request.user).values_list('ticket_id', flat=True))
-    return render(request, 'reviews/feed.html', {
-        'posts': posts,
-        'reviewed_ids': reviewed_ids,
-    })
+        Review.objects.filter(user=request.user).values_list(
+            'ticket_id', flat=True
+        )
+    )
+    return render(
+        request,
+        'reviews/feed.html',
+        {
+            'posts': posts,
+            'reviewed_ids': reviewed_ids,
+        },
+    )
 
 
 @login_required
 def posts(request):
     """The current user's own tickets and reviews, with edit/delete actions."""
     tickets = Ticket.objects.filter(user=request.user).annotate(
-        content_type=Value('TICKET', CharField()))
+        content_type=Value('TICKET', CharField())
+    )
     reviews = Review.objects.filter(user=request.user).annotate(
-        content_type=Value('REVIEW', CharField()))
-    posts = sorted(chain(tickets, reviews), key=lambda p: p.time_created, reverse=True)
+        content_type=Value('REVIEW', CharField())
+    )
+    posts = sorted(
+        chain(tickets, reviews), key=lambda p: p.time_created, reverse=True
+    )
     return render(request, 'reviews/posts.html', {'posts': posts})
 
 
@@ -85,7 +101,9 @@ def edit_ticket(request, ticket_id):
             return redirect('posts')
     else:
         form = TicketForm(instance=ticket)
-    return render(request, 'reviews/edit_ticket.html', {'form': form, 'ticket': ticket})
+    return render(
+        request, 'reviews/edit_ticket.html', {'form': form, 'ticket': ticket}
+    )
 
 
 @login_required
@@ -116,7 +134,9 @@ def create_review(request, ticket_id):
             return redirect('feed')
     else:
         form = ReviewForm()
-    return render(request, 'reviews/create_review.html', {'form': form, 'ticket': ticket})
+    return render(
+        request, 'reviews/create_review.html', {'form': form, 'ticket': ticket}
+    )
 
 
 @login_required
@@ -132,7 +152,9 @@ def edit_review(request, review_id):
             return redirect('posts')
     else:
         form = ReviewForm(instance=review)
-    return render(request, 'reviews/edit_review.html', {'form': form, 'review': review})
+    return render(
+        request, 'reviews/edit_review.html', {'form': form, 'review': review}
+    )
 
 
 @login_required
@@ -166,10 +188,14 @@ def create_ticket_and_review(request):
     else:
         ticket_form = TicketForm()
         review_form = ReviewForm()
-    return render(request, 'reviews/create_ticket_and_review.html', {
-        'ticket_form': ticket_form,
-        'review_form': review_form,
-    })
+    return render(
+        request,
+        'reviews/create_ticket_and_review.html',
+        {
+            'ticket_form': ticket_form,
+            'review_form': review_form,
+        },
+    )
 
 
 @login_required
@@ -180,22 +206,31 @@ def follows(request):
         if form.is_valid():
             target = form.cleaned_data['target']
             UserFollows.objects.create(user=request.user, followed_user=target)
-            messages.success(request, f'Vous suivez maintenant {target.username}.')
+            messages.success(
+                request, f'Vous suivez maintenant {target.username}.'
+            )
             return redirect('follows')
     else:
         form = FollowForm(user=request.user)
     following = request.user.following.select_related('followed_user')
     followers = request.user.followed_by.select_related('user')
     following_ids = set(following.values_list('followed_user_id', flat=True))
-    suggestions = User.objects.exclude(pk=request.user.pk).exclude(
-        pk__in=following_ids).order_by('username')[:5]
-    return render(request, 'reviews/follows.html', {
-        'form': form,
-        'following': following,
-        'followers': followers,
-        'following_ids': following_ids,
-        'suggestions': suggestions,
-    })
+    suggestions = (
+        User.objects.exclude(pk=request.user.pk)
+        .exclude(pk__in=following_ids)
+        .order_by('username')[:5]
+    )
+    return render(
+        request,
+        'reviews/follows.html',
+        {
+            'form': form,
+            'following': following,
+            'followers': followers,
+            'following_ids': following_ids,
+            'suggestions': suggestions,
+        },
+    )
 
 
 @login_required
@@ -205,7 +240,9 @@ def follow(request, user_id):
     target = get_object_or_404(User, pk=user_id)
     if target == request.user:
         raise PermissionDenied
-    _, created = UserFollows.objects.get_or_create(user=request.user, followed_user=target)
+    _, created = UserFollows.objects.get_or_create(
+        user=request.user, followed_user=target
+    )
     if created:
         messages.success(request, f'Vous suivez maintenant {target.username}.')
     else:
@@ -217,7 +254,11 @@ def follow(request, user_id):
 @require_POST
 def unfollow(request, user_id):
     """Stop following a user. POST only."""
-    follow = get_object_or_404(UserFollows, user=request.user, followed_user_id=user_id)
+    follow = get_object_or_404(
+        UserFollows, user=request.user, followed_user_id=user_id
+    )
     follow.delete()
-    messages.success(request, f'Vous ne suivez plus {follow.followed_user.username}.')
+    messages.success(
+        request, f'Vous ne suivez plus {follow.followed_user.username}.'
+    )
     return redirect('follows')

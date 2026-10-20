@@ -38,7 +38,7 @@ class LoginForm(AuthenticationForm):
 
 
 class TicketImageInput(forms.ClearableFileInput):
-    """Image field with a preview, a 'remove' checkbox and a 'replace' input."""
+    """Image field with a preview, a 'remove' checkbox and a new input."""
 
     template_name = 'reviews/widgets/clearable_file_input.html'
     clear_checkbox_label = "Supprimer l'image actuelle"
@@ -53,7 +53,9 @@ class TicketForm(forms.ModelForm):
         fields = ('title', 'description', 'image')
         widgets = {
             'title': forms.TextInput(attrs={'class': INPUT_CLASSES}),
-            'description': forms.Textarea(attrs={'class': TEXTAREA_CLASSES, 'rows': 5}),
+            'description': forms.Textarea(
+                attrs={'class': TEXTAREA_CLASSES, 'rows': 5}
+            ),
             'image': TicketImageInput(attrs={'class': 'file-input w-full'}),
         }
 
@@ -71,7 +73,9 @@ class ReviewForm(forms.ModelForm):
         }
         widgets = {
             'headline': forms.TextInput(attrs={'class': INPUT_CLASSES}),
-            'body': forms.Textarea(attrs={'class': TEXTAREA_CLASSES, 'rows': 6}),
+            'body': forms.Textarea(
+                attrs={'class': TEXTAREA_CLASSES, 'rows': 6}
+            ),
             'rating': forms.RadioSelect(
                 choices=[(i, str(i)) for i in range(6)],
                 attrs={'class': 'radio radio-primary'},
@@ -99,8 +103,12 @@ class FollowForm(forms.Form):
         except User.DoesNotExist:
             raise forms.ValidationError("Cet utilisateur n'existe pas.")
         if target == self.user:
-            raise forms.ValidationError('Vous ne pouvez pas vous suivre vous-même.')
-        if UserFollows.objects.filter(user=self.user, followed_user=target).exists():
+            raise forms.ValidationError(
+                'Vous ne pouvez pas vous suivre vous-même.'
+            )
+        if UserFollows.objects.filter(
+            user=self.user, followed_user=target
+        ).exists():
             raise forms.ValidationError('Vous suivez déjà cet utilisateur.')
         self.cleaned_data['target'] = target
         return username

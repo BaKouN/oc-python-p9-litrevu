@@ -20,7 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(7*&r5mmuzuv6i%i=u24(l5$g_&(!&u1wk09n6*c-8-82)*a^p'
+SECRET_KEY = (
+    'django-insecure-(7*&r5mmuzuv6i%i=u24(l5$g_&(!&u1wk09n6*c-8-82)*a^p'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,13 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.forms',
-    'reviews'
+    'reviews',
 ]
 
 AUTH_USER_MODEL = 'reviews.User'
 # Auth flow (named URLs, defined in reviews/urls.py)
-LOGIN_URL = 'login'            # where @login_required sends anonymous users
-LOGIN_REDIRECT_URL = 'feed'    # where users land after logging in
+LOGIN_URL = 'login'  # where @login_required sends anonymous users
+LOGIN_REDIRECT_URL = 'feed'  # where users land after logging in
 LOGOUT_REDIRECT_URL = 'login'  # where users land after logging out
 
 MIDDLEWARE = [
@@ -93,16 +95,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa: E501
     },
 ]
 

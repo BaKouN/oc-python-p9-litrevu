@@ -11,6 +11,7 @@ Seuils WCAG :
 
 Usage :  .venv/bin/python scripts/check-contrast.py
 """
+
 import re
 import sys
 from pathlib import Path
@@ -25,14 +26,16 @@ def hex_to_rgb(value):
     value = value.lstrip('#')
     if len(value) == 3:
         value = ''.join(c * 2 for c in value)
-    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
 
 
 def relative_luminance(rgb):
     channels = []
     for raw in rgb:
         c = raw / 255
-        channels.append(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
+        channels.append(
+            c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+        )
     r, g, b = channels
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
@@ -52,7 +55,9 @@ def read_theme():
         sys.exit(f'Bloc de theme introuvable dans {INPUT_CSS}')
     return {
         name: value
-        for name, value in re.findall(r'--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{3,6})', block.group(1))
+        for name, value in re.findall(
+            r'--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{3,6})', block.group(1)
+        )
     }
 
 
@@ -68,9 +73,17 @@ def check_rule(selector, foreground, background, threshold=4.5):
     css = INPUT_CSS.read_text()
     if selector not in css:
         print(f'  ECHEC {selector} absent de input.css')
-        FAILURES.append(f'{selector} : regle de correction absente (risque de texte sur son propre fond)')
+        FAILURES.append(
+            f'{selector} : regle de correction absente '
+            '(risque de texte sur son propre fond)'
+        )
         return
-    check(f'{selector} -> {foreground} sur {background}', foreground, background, threshold)
+    check(
+        f'{selector} -> {foreground} sur {background}',
+        foreground,
+        background,
+        threshold,
+    )
 
 
 def check(label, foreground, background, threshold=4.5):
@@ -89,24 +102,42 @@ def main():
     print(f'Couleurs du theme : {len(theme)} variables\n')
 
     print('Texte sur les surfaces de page et de carte')
-    check('texte sur carte (base-content / base-100)', 'base-content', 'base-100')
-    check('texte sur fond de page (base-content / base-200)', 'base-content', 'base-200')
+    check(
+        'texte sur carte (base-content / base-100)', 'base-content', 'base-100'
+    )
+    check(
+        'texte sur fond de page (base-content / base-200)',
+        'base-content',
+        'base-200',
+    )
 
     print('\nLibelles sur les boutons pleins')
-    for name in ('primary', 'secondary', 'accent', 'neutral',
-                 'info', 'success', 'warning', 'error'):
+    for name in (
+        'primary',
+        'secondary',
+        'accent',
+        'neutral',
+        'info',
+        'success',
+        'warning',
+        'error',
+    ):
         check(f'{name}-content sur {name}', f'{name}-content', name)
 
     print('\nLiens et messages, sur carte et sur fond de page')
     for surface in ('base-100', 'base-200'):
-        check(f'lien (primary) sur {surface}', 'primary', surface, threshold=4.5)
+        check(
+            f'lien (primary) sur {surface}', 'primary', surface, threshold=4.5
+        )
         check(f'erreur (error) sur {surface}', 'error', surface, threshold=4.5)
 
     print('\nElements imbriques dans un fond colore (regles composees)')
     check_rule('.alert .errorlist', 'error-content', 'error')
 
     print('\nBordures et elements non textuels (WCAG 1.4.11)')
-    check('bordure (base-300) sur carte', 'base-300', 'base-100', threshold=1.0)
+    check(
+        'bordure (base-300) sur carte', 'base-300', 'base-100', threshold=1.0
+    )
 
     print()
     if FAILURES:
